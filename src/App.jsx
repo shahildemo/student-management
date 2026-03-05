@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
+import Toast from './components/Toast';
 import Dashboard from './pages/Dashboard';
 import AddStudent from './pages/AddStudent';
 import StudentList from './pages/StudentList';
@@ -8,14 +9,52 @@ import EditStudent from './pages/EditStudent';
 import './App.css';
 
 function App() {
-  const [students, setStudents] = useState([]);
+  // Load students from localStorage on initial render
+  const [students, setStudents] = useState(() => {
+    try {
+      const savedStudents = localStorage.getItem('students');
+      if (savedStudents) {
+        const parsed = JSON.parse(savedStudents);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error);
+    }
+    return [];
+  });
+
+  // Toast notification state
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  // Show toast helper
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+  };
+
+  // Hide toast helper
+  const hideToast = () => {
+    setToast({ show: false, message: '', type: 'success' });
+  };
+
+  // Save students to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('students', JSON.stringify(students));
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+    }
+  }, [students]);
 
   const addStudent = (student) => {
     setStudents([...students, { ...student, id: Date.now() }]);
+    showToast('Student added successfully!', 'success');
   };
 
   const deleteStudent = (id) => {
     setStudents(students.filter((student) => student.id !== id));
+    showToast('Student deleted successfully!', 'success');
   };
 
   const updateStudent = (updatedStudent) => {
@@ -24,12 +63,23 @@ function App() {
         student.id === updatedStudent.id ? updatedStudent : student
       )
     );
+    showToast('Student updated successfully!', 'success');
   };
 
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
         <Navbar />
+        
+        {/* Toast Notification */}
+        {toast.show && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={hideToast}
+          />
+        )}
+        
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>
             <Route path="/" element={<Dashboard students={students} />} />

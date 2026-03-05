@@ -1,9 +1,19 @@
-import { FaUserGraduate, FaUsers, FaUserCheck, FaUserTimes } from 'react-icons/fa';
+import { FaUserGraduate, FaUsers, FaUserCheck, FaUserTimes, FaChartPie, FaBook } from 'react-icons/fa';
 
 function Dashboard({ students }) {
   const totalStudents = students.length;
   const activeStudents = students.filter((s) => s.status === 'Active').length;
   const inactiveStudents = students.filter((s) => s.status === 'Inactive').length;
+
+  // Calculate course distribution
+  const courseCounts = students.reduce((acc, student) => {
+    acc[student.course] = (acc[student.course] || 0) + 1;
+    return acc;
+  }, {});
+
+  const courseStats = Object.entries(courseCounts)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 5);
 
   const stats = [
     {
@@ -32,7 +42,7 @@ function Dashboard({ students }) {
     },
     {
       title: 'Courses',
-      count: new Set(students.map((s) => s.course)).size,
+      count: Object.keys(courseCounts).length,
       icon: <FaUserGraduate className="text-3xl" />,
       bgColor: 'bg-gradient-to-br from-purple-500 to-purple-600',
       textColor: 'text-purple-600',
@@ -53,7 +63,7 @@ function Dashboard({ students }) {
         {stats.map((stat, index) => (
           <div
             key={index}
-            className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow"
+            className="bg-white rounded-lg sm:rounded-xl border border-gray-300 p-4 sm:p-6 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center gap-3 sm:gap-4">
               <div className={`${stat.bgColor} text-white p-2 sm:p-3 rounded-lg`}>
@@ -68,8 +78,82 @@ function Dashboard({ students }) {
         ))}
       </div>
 
+      {/* Charts Section */}
+      {students.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          {/* Status Distribution */}
+          <div className="bg-white rounded-lg sm:rounded-xl border border-gray-300 p-4 sm:p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <FaChartPie className="text-blue-600" />
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Status Distribution</h2>
+            </div>
+            <div className="space-y-3">
+              {/* Active Bar */}
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600">Active</span>
+                  <span className="font-medium text-gray-900">{activeStudents} ({totalStudents > 0 ? Math.round((activeStudents / totalStudents) * 100) : 0}%)</span>
+                </div>
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-green-500 rounded-full transition-all duration-500"
+                    style={{ width: `${totalStudents > 0 ? (activeStudents / totalStudents) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+              {/* Inactive Bar */}
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600">Inactive</span>
+                  <span className="font-medium text-gray-900">{inactiveStudents} ({totalStudents > 0 ? Math.round((inactiveStudents / totalStudents) * 100) : 0}%)</span>
+                </div>
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-red-500 rounded-full transition-all duration-500"
+                    style={{ width: `${totalStudents > 0 ? (inactiveStudents / totalStudents) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Courses */}
+          <div className="bg-white rounded-lg sm:rounded-xl border border-gray-300 p-4 sm:p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <FaBook className="text-purple-600" />
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Top Courses</h2>
+            </div>
+            {courseStats.length > 0 ? (
+              <div className="space-y-3">
+                {courseStats.map(([course, count], index) => (
+                  <div key={course}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-600 truncate max-w-[200px]">{course}</span>
+                      <span className="font-medium text-gray-900">{count} students</span>
+                    </div>
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          index === 0 ? 'bg-purple-500' : 
+                          index === 1 ? 'bg-blue-500' : 
+                          index === 2 ? 'bg-green-500' : 
+                          index === 3 ? 'bg-yellow-500' : 'bg-gray-500'
+                        }`}
+                        style={{ width: `${(count / totalStudents) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400 text-sm text-center py-4">No course data available</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Recent Students Table */}
-      <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200">
+      <div className="bg-white rounded-lg sm:rounded-xl border border-gray-300">
         <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
           <h2 className="text-base sm:text-lg font-semibold text-gray-900">Recent Students</h2>
         </div>
@@ -81,12 +165,12 @@ function Dashboard({ students }) {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[500px]">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-100">
                 <tr>
-                  <th className="text-left py-2.5 sm:py-3 px-3 sm:px-6 text-xs font-medium text-gray-500 uppercase">Name</th>
-                  <th className="text-left py-2.5 sm:py-3 px-3 sm:px-6 text-xs font-medium text-gray-500 uppercase">Age</th>
-                  <th className="text-left py-2.5 sm:py-3 px-3 sm:px-6 text-xs font-medium text-gray-500 uppercase">Course</th>
-                  <th className="text-left py-2.5 sm:py-3 px-3 sm:px-6 text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="text-left py-2.5 sm:py-3 px-3 sm:px-6 text-xs font-medium text-gray-600 uppercase">Name</th>
+                  <th className="text-left py-2.5 sm:py-3 px-3 sm:px-6 text-xs font-medium text-gray-600 uppercase">Age</th>
+                  <th className="text-left py-2.5 sm:py-3 px-3 sm:px-6 text-xs font-medium text-gray-600 uppercase">Course</th>
+                  <th className="text-left py-2.5 sm:py-3 px-3 sm:px-6 text-xs font-medium text-gray-600 uppercase">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">

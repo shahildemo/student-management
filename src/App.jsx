@@ -8,11 +8,7 @@ import EditStudent from './pages/EditStudent';
 import './App.css';
 
 function App() {
-  const [students, setStudents] = useState([
-    { id: 1, name: 'John Doe', age: 20, course: 'Computer Science', status: 'Active' },
-    { id: 2, name: 'Jane Smith', age: 22, course: 'Mathematics', status: 'Inactive' },
-    { id: 3, name: 'Mike Johnson', age: 21, course: 'Physics', status: 'Active' },
-  ]);
+  const [students, setStudents] = useState([]);
 
   const addStudent = (student) => {
     setStudents([...students, { ...student, id: Date.now() }]);
@@ -34,7 +30,7 @@ function App() {
     <Router>
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <main className="container mx-auto px-6 lg:px-8 py-10">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>
             <Route path="/" element={<Dashboard students={students} />} />
             <Route

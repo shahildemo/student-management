@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUserPlus, FaArrowLeft, FaUser, FaCalendar, FaBook, FaToggleOn } from 'react-icons/fa';
+import { FaArrowLeft, FaUser, FaUserPlus } from 'react-icons/fa';
 
 function AddStudent({ addStudent }) {
   const navigate = useNavigate();
@@ -36,12 +36,6 @@ function AddStudent({ addStudent }) {
         ...formData,
         age: parseInt(formData.age),
       });
-      setFormData({
-        name: '',
-        age: '',
-        course: '',
-        status: 'Active',
-      });
       navigate('/students');
     }
   };
@@ -55,151 +49,129 @@ function AddStudent({ addStudent }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="flex items-center mb-8">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center space-x-2 text-gray-500 hover:text-gray-700 transition-colors duration-200 font-medium"
-        >
-          <FaArrowLeft />
-          <span>Back to List</span>
-        </button>
-      </div>
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Back Button */}
+      <button
+        onClick={() => navigate('/students')}
+        className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm font-medium mb-6"
+      >
+        <FaArrowLeft className="text-xs" />
+        <span>Back to Students</span>
+      </button>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-blue-50/50 to-transparent">
-          <div className="flex items-center space-x-4">
-            <div className="bg-blue-100 p-3 rounded-xl">
-              <FaUserPlus className="text-2xl text-blue-600" />
+      {/* Form Card */}
+      <div className="bg-white rounded-xl border border-gray-300 shadow-lg">
+        {/* Card Header */}
+        <div className="px-6 py-5 border-b border-gray-300 bg-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <FaUserPlus className="text-blue-600 text-lg" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Add New Student</h1>
-              <p className="text-gray-500 mt-1">Enter student details below</p>
+              <h1 className="text-lg font-semibold text-gray-900">Add New Student</h1>
+              <p className="text-gray-500 text-sm">Enter student details to create a new record</p>
             </div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-8">
-          <div className="space-y-6">
-            <div>
-              <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
-                <FaUser className="text-gray-400" />
-                <span>Full Name</span>
-              </label>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {/* Name Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Full Name <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaUser className="text-gray-400 text-sm" />
+              </div>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Enter student's full name"
-                className={`w-full px-5 py-3.5 rounded-xl border-2 ${
-                  errors.name ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-blue-500'
-                } focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 bg-gray-50/50`}
+                placeholder="e.g., John Doe"
+                className={`w-full pl-10 pr-3 py-2.5 rounded-lg border text-sm bg-white text-gray-900 ${
+                  errors.name 
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-200' 
+                    : 'border-gray-400 focus:border-blue-500 focus:ring-blue-200'
+                } focus:outline-none focus:ring-2 transition-colors placeholder-gray-400`}
               />
-              {errors.name && (
-                <p className="mt-2 text-sm text-red-500 font-medium">{errors.name}</p>
-              )}
             </div>
+            {errors.name && <p className="mt-1.5 text-sm text-red-600">{errors.name}</p>}
+          </div>
 
+          {/* Age and Status Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {/* Age Field */}
             <div>
-              <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
-                <FaCalendar className="text-gray-400" />
-                <span>Age</span>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Age <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
                 name="age"
                 value={formData.age}
                 onChange={handleChange}
-                placeholder="Enter student age"
+                placeholder="e.g., 20"
                 min="1"
                 max="120"
-                className={`w-full px-5 py-3.5 rounded-xl border-2 ${
-                  errors.age ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-blue-500'
-                } focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 bg-gray-50/50`}
+                className={`w-full px-3 py-2.5 rounded-lg border text-sm bg-white text-gray-900 ${
+                  errors.age 
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-200' 
+                    : 'border-gray-400 focus:border-blue-500 focus:ring-blue-200'
+                } focus:outline-none focus:ring-2 transition-colors placeholder-gray-400`}
               />
-              {errors.age && (
-                <p className="mt-2 text-sm text-red-500 font-medium">{errors.age}</p>
-              )}
+              {errors.age && <p className="mt-1.5 text-sm text-red-600">{errors.age}</p>}
             </div>
 
+            {/* Status Field */}
             <div>
-              <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
-                <FaBook className="text-gray-400" />
-                <span>Course</span>
-              </label>
-              <input
-                type="text"
-                name="course"
-                value={formData.course}
+              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <select
+                name="status"
+                value={formData.status}
                 onChange={handleChange}
-                placeholder="Enter course name (e.g., Computer Science)"
-                className={`w-full px-5 py-3.5 rounded-xl border-2 ${
-                  errors.course ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-blue-500'
-                } focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 bg-gray-50/50`}
-              />
-              {errors.course && (
-                <p className="mt-2 text-sm text-red-500 font-medium">{errors.course}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-4">
-                <FaToggleOn className="text-gray-400" />
-                <span>Status</span>
-              </label>
-              <div className="flex space-x-6">
-                <label className="flex items-center space-x-3 cursor-pointer group">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-                    formData.status === 'Active' ? 'border-green-500 bg-green-500' : 'border-gray-300 group-hover:border-gray-400'
-                  }`}>
-                    {formData.status === 'Active' && <div className="w-2 h-2 bg-white rounded-full" />}
-                  </div>
-                  <input
-                    type="radio"
-                    name="status"
-                    value="Active"
-                    checked={formData.status === 'Active'}
-                    onChange={handleChange}
-                    className="hidden"
-                  />
-                  <span className={`font-medium transition-colors ${formData.status === 'Active' ? 'text-green-700' : 'text-gray-600'}`}>
-                    Active
-                  </span>
-                </label>
-                <label className="flex items-center space-x-3 cursor-pointer group">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-                    formData.status === 'Inactive' ? 'border-red-500 bg-red-500' : 'border-gray-300 group-hover:border-gray-400'
-                  }`}>
-                    {formData.status === 'Inactive' && <div className="w-2 h-2 bg-white rounded-full" />}
-                  </div>
-                  <input
-                    type="radio"
-                    name="status"
-                    value="Inactive"
-                    checked={formData.status === 'Inactive'}
-                    onChange={handleChange}
-                    className="hidden"
-                  />
-                  <span className={`font-medium transition-colors ${formData.status === 'Inactive' ? 'text-red-700' : 'text-gray-600'}`}>
-                    Inactive
-                  </span>
-                </label>
-              </div>
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 text-sm bg-white text-gray-900"
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
             </div>
           </div>
 
-          <div className="flex space-x-4 pt-6 border-t border-gray-100">
+          {/* Course Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Course <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="course"
+              value={formData.course}
+              onChange={handleChange}
+              placeholder="e.g., Computer Science"
+              className={`w-full px-3 py-2.5 rounded-lg border text-sm bg-white text-gray-900 ${
+                errors.course 
+                  ? 'border-red-500 focus:border-red-500 focus:ring-red-200' 
+                  : 'border-gray-400 focus:border-blue-500 focus:ring-blue-200'
+              } focus:outline-none focus:ring-2 transition-colors placeholder-gray-400`}
+            />
+            {errors.course && <p className="mt-1.5 text-sm text-red-600">{errors.course}</p>}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-300">
             <button
               type="button"
               onClick={() => navigate('/students')}
-              className="flex-1 px-6 py-3.5 border-2 border-gray-200 text-gray-600 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 font-semibold"
+              className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-6 py-3.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40"
+              className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
             >
               Add Student
             </button>

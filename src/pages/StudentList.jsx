@@ -1,12 +1,14 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FaEdit, FaTrash, FaUser, FaPlus, FaSearch, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
+import { useState } from'react';
+import { Link } from'react-router-dom';
+import { FaEdit, FaTrash, FaUser, FaPlus, FaSearch, FaSort, FaSortUp, FaSortDown, FaCheckSquare, FaSquare, FaFileCsv, FaUndo, FaChartBar } from'react-icons/fa';
 
 function StudentList({ students, deleteStudent }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
+  const [selectedStudents, setSelectedStudents] = useState([]);
+  const [showBulkActions, setShowBulkActions] = useState(false);
 
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this student?')) {
@@ -27,39 +29,90 @@ function StudentList({ students, deleteStudent }) {
   // Get sort icon
   const getSortIcon = (field) => {
     if (sortField !== field) return <FaSort className="text-gray-300 text-xs" />;
-    return sortDirection === 'asc' 
+   return sortDirection === 'asc' 
       ? <FaSortUp className="text-blue-600 text-xs" /> 
       : <FaSortDown className="text-blue-600 text-xs" />;
+  };
+
+  // Toggle select single student
+  const toggleSelectStudent = (id) => {
+    if (selectedStudents.includes(id)) {
+      setSelectedStudents(selectedStudents.filter(sid => sid !== id));
+    } else {
+      setSelectedStudents([...selectedStudents, id]);
+    }
+  };
+
+  // Select all students
+  const toggleSelectAll = () => {
+    if (selectedStudents.length === filteredAndSortedStudents.length) {
+      setSelectedStudents([]);
+    } else {
+      setSelectedStudents(filteredAndSortedStudents.map(s => s.id));
+    }
+  };
+
+  // Bulk delete
+  const handleBulkDelete = () => {
+    if (window.confirm(`Are you sure you want to delete ${selectedStudents.length} selected students?`)) {
+      selectedStudents.forEach(id => deleteStudent(id));
+      setSelectedStudents([]);
+      setShowBulkActions(false);
+    }
+  };
+
+  // Bulk change status
+  const handleBulkStatusChange = (newStatus) => {
+    // This would need to be passed from App.jsx - for now just clear selection
+    alert(`Would update ${selectedStudents.length} students to ${newStatus}`);
+    setSelectedStudents([]);
+    setShowBulkActions(false);
+  };
+
+  // Export to CSV
+  const exportToCSV = () => {
+   const headers = ['ID,Name,Age,Course,Status'];
+   const rows = filteredAndSortedStudents.map(s => 
+      `${s.id},"${s.name}",${s.age},"${s.course}",${s.status}`
+    );
+   const csvContent = [headers, ...rows].join('\n');
+   const blob = new Blob([csvContent], { type: 'text/csv' });
+   const url = window.URL.createObjectURL(blob);
+   const a = document.createElement('a');
+    a.href = url;
+    a.download = `students-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   // Filter and sort students
   const filteredAndSortedStudents = students
     .filter((student) => {
-      const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           student.course.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'All' || student.status === statusFilter;
-      return matchesSearch && matchesStatus;
+     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          student.course.toLowerCase().includes(searchTerm.toLowerCase());
+     const matchesStatus = statusFilter === 'All' || student.status === statusFilter;
+     return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
       let comparison = 0;
       if (sortField === 'name') {
-        comparison = a.name.localeCompare(b.name);
+       comparison = a.name.localeCompare(b.name);
       } else if (sortField === 'age') {
-        comparison = parseInt(a.age) - parseInt(b.age);
+       comparison = parseInt(a.age) - parseInt(b.age);
       } else if (sortField === 'course') {
-        comparison = a.course.localeCompare(b.course);
+       comparison = a.course.localeCompare(b.course);
       } else if (sortField === 'status') {
-        comparison = a.status.localeCompare(b.status);
+       comparison = a.status.localeCompare(b.status);
       }
-      return sortDirection === 'asc' ? comparison : -comparison;
+     return sortDirection === 'asc' ? comparison: -comparison;
     });
 
-  return (
+ return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Students</h1>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Students</h1>
           <p className="text-gray-500 mt-0.5 sm:mt-1 text-sm">Manage your student records</p>
         </div>
         <Link
@@ -71,6 +124,46 @@ function StudentList({ students, deleteStudent }) {
         </Link>
       </div>
 
+      {/* Bulk Actions Bar */}
+      {selectedStudents.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-blue-800">
+              {selectedStudents.length} selected
+            </span>
+            <button
+              onClick={() => setSelectedStudents([])}
+              className="text-blue-600 hover:text-blue-800 text-sm"
+            >
+              Clear
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handleBulkDelete}
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white rounded-md text-sm hover:bg-red-700 transition-colors"
+            >
+              <FaTrash className="text-xs" />
+              Delete
+            </button>
+            <button
+              onClick={() => handleBulkStatusChange('Active')}
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition-colors"
+            >
+              <FaCheckSquare className="text-xs" />
+              Set Active
+            </button>
+            <button
+              onClick={() => handleBulkStatusChange('Inactive')}
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-600 text-white rounded-md text-sm hover:bg-gray-700 transition-colors"
+            >
+              <FaSquare className="text-xs" />
+              Set Inactive
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Search and Filter Bar - Always Visible */}
       <div className="bg-white rounded-lg border border-gray-300 p-3 sm:p-4 mb-4 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-3">
@@ -81,12 +174,12 @@ function StudentList({ students, deleteStudent }) {
             </div>
             <input
               type="text"
-              placeholder="Search by name or course..."
+             placeholder="Search by name or course..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               disabled={students.length === 0}
               className={`w-full pl-10 pr-3 py-2 rounded-lg border text-sm ${
-                students.length === 0 
+               students.length === 0 
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                   : 'bg-white text-gray-900 border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500'
               }`}
@@ -99,7 +192,7 @@ function StudentList({ students, deleteStudent }) {
             onChange={(e) => setStatusFilter(e.target.value)}
             disabled={students.length === 0}
             className={`px-3 py-2 rounded-lg border text-sm sm:w-40 ${
-              students.length === 0 
+             students.length === 0 
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                 : 'bg-white text-gray-900 border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500'
             }`}
@@ -108,6 +201,20 @@ function StudentList({ students, deleteStudent }) {
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
           </select>
+
+          {/* Export Button */}
+          <button
+            onClick={exportToCSV}
+            disabled={students.length === 0}
+            className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+             students.length === 0
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-green-600 text-white hover:bg-green-700'
+            }`}
+          >
+            <FaFileCsv className="text-xs" />
+            Export CSV
+          </button>
         </div>
         
         {/* Results Count */}
@@ -149,6 +256,14 @@ function StudentList({ students, deleteStudent }) {
             <table className="w-full min-w-[600px]">
               <thead className="bg-gray-100">
                 <tr>
+                  <th className="text-left py-2.5 sm:py-3 px-3 sm:px-6 text-xs font-medium text-gray-600 uppercase">
+                    <input
+                      type="checkbox"
+                      checked={selectedStudents.length === filteredAndSortedStudents.length && filteredAndSortedStudents.length > 0}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                  </th>
                   <th 
                     className="text-left py-2.5 sm:py-3 px-3 sm:px-6 text-xs font-medium text-gray-600 uppercase cursor-pointer hover:bg-gray-200 transition-colors select-none"
                     onClick={() => handleSort('name')}
@@ -192,7 +307,17 @@ function StudentList({ students, deleteStudent }) {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredAndSortedStudents.map((student) => (
-                  <tr key={student.id} className="hover:bg-gray-50">
+                  <tr key={student.id} className={`hover:bg-gray-50 transition-colors ${
+                    selectedStudents.includes(student.id) ? 'bg-blue-50' : ''
+                  }`}>
+                    <td className="py-2.5 sm:py-3 px-3 sm:px-6">
+                      <input
+                        type="checkbox"
+                        checked={selectedStudents.includes(student.id)}
+                        onChange={() => toggleSelectStudent(student.id)}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      />
+                    </td>
                     <td className="py-2.5 sm:py-3 px-3 sm:px-6">
                       <div className="flex items-center gap-2 sm:gap-3">
                         <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -205,7 +330,7 @@ function StudentList({ students, deleteStudent }) {
                     <td className="py-2.5 sm:py-3 px-3 sm:px-6 text-gray-600 text-sm truncate max-w-[100px] sm:max-w-none">{student.course}</td>
                     <td className="py-2.5 sm:py-3 px-3 sm:px-6">
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                        student.status === 'Active'
+                       student.status === 'Active'
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
                       }`}>

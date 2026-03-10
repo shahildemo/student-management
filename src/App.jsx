@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from'react-router-dom';
 import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Toast from './components/Toast';
@@ -6,7 +6,8 @@ import Dashboard from './pages/Dashboard';
 import AddStudent from './pages/AddStudent';
 import StudentList from './pages/StudentList';
 import EditStudent from './pages/EditStudent';
-import './App.css';
+import Attendance from './pages/Attendance';
+import'./App.css';
 
 function App() {
   // Load students from localStorage on initial render
@@ -117,13 +118,17 @@ function App() {
               }
             />
             <Route
-              path="/edit/:id"
-              element={
+             path="/edit/:id"
+             element={
                 <EditStudent
-                  students={students}
+                 students={students}
                   updateStudent={updateStudent}
                 />
               }
+            />
+            <Route
+             path="/attendance/:id"
+             element={<Attendance students={students} />}
             />
           </Routes>
         </main>

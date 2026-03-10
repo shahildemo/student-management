@@ -25,6 +25,19 @@ function App() {
     return [];
   });
 
+  // Dark mode state
+  const [darkMode, setDarkMode] = useState(() => {
+  const savedMode = localStorage.getItem('darkMode');
+   return savedMode ? JSON.parse(savedMode) : false;
+  });
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+  const newMode = !darkMode;
+   setDarkMode(newMode);
+   localStorage.setItem('darkMode', JSON.stringify(newMode));
+  };
+
   // Toast notification state
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
@@ -47,6 +60,11 @@ function App() {
     }
   }, [students]);
 
+  // Save dark mode preference to localStorage
+  useEffect(() => {
+   document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode]);
+
   const addStudent = (student) => {
     setStudents([...students, { ...student, id: Date.now() }]);
     showToast('Student added successfully!', 'success');
@@ -68,8 +86,10 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
+      <div className={`min-h-screen transition-colors duration-300 ${
+        darkMode ? 'bg-gray-900' : 'bg-gray-50'
+      }`}>
+        <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         
         {/* Toast Notification */}
         {toast.show && (
